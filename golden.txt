@@ -1,0 +1,11 @@
+# QR encoder golden digests (SHA-256 of module matrix).
+# Regenerated automatically when a new case appears; a change to an
+# existing line indicates encoder output drift.
+12345678901234567890|L0|v1 459d0e7c4ce4282b04b3558bc61793bc8895a5984ead3fc97fc0336b36044640
+9999999999999999..(700)|L0|v11 bd692a0d281a8fb420547c4eb7dab1d8cd8fe8346d1fe13039414cb5cb00ac01
+AAAAAAAAAAAAAAAA..(200)|L1|v8 70ce3c8bca641c2ec31c5e1e5d129c8be4963ab42158a4c5a9e1702ae1d41b4f
+HELLO WORLD|L2|v1 19deb8e61249956159932c2de0b9254e5784e7e138dfe6b887f5c628c06bb6f8
+Threat-Intel Thr..(650)|L2|v24 84cb7d0649fb9f3723e3a154cc5662b98a4df196c1b2208d27ec2b7978e12f70
+XXXXXXXXXXXXXXXX..(1200)|L3|v32 afc80e0d59e4c8cf21e8ce626ca10d0cc984104f3e4d17297fafa6c7c7d13904
+https://netstar-..(41)|L3|v5 568e01582011556149b1520963a8b3929b1ecbde9afb5fd4877b4cd7e5445351
+netstar-labs/qr|L1|v2 2fac63aae177edfcfdcd90e48287a93d63472354d83a9668a265ed8ac289e5b6

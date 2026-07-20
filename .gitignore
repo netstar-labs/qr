@@ -1,0 +1,20 @@
+# Test binary, built with `go test -c`
+*.test
+
+# Editor/IDE
+.vscode/
+.claude
+
+# macOS
+**/.DS_Store
+**/~*
+
+# transient work dirs
+_bin/
+_dev/
+sandbox/
+
+# binaries built at repo root or in cmd/
+/qr
+/qrgen
+/cmd/qrgen/qrgen
