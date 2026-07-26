@@ -172,4 +172,4 @@ library and does not affect the zero-dependency guarantee.
 
 ## License
 
-GNU General Public License v3.0 — see [LICENSE](LICENSE).
+Licensed under the Apache License, Version 2.0 — see [LICENSE](LICENSE).
