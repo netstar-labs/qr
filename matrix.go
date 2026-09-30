@@ -170,28 +170,39 @@ func (g *grid) applyMask(mask int) {
 	}
 }
 
+// formatBitCells returns, MSB-first, the grid coordinates (row, col) of the
+// two redundant 15-bit format-information copies, so the encoder and decoder
+// read/write the exact same cells and can never disagree.
+func formatBitCells(size int) (copy1, copy2 [15][2]int) {
+	// Copy 1 around the top-left finder.
+	for i := 0; i <= 5; i++ {
+		copy1[i] = [2]int{8, i}
+	}
+	copy1[6] = [2]int{8, 7}
+	copy1[7] = [2]int{8, 8}
+	copy1[8] = [2]int{7, 8}
+	for i := 9; i <= 14; i++ {
+		copy1[i] = [2]int{14 - i, 8}
+	}
+	// Copy 2 split across the other two finders.
+	for i := 0; i <= 7; i++ {
+		copy2[i] = [2]int{size - 1 - i, 8}
+	}
+	for i := 8; i <= 14; i++ {
+		copy2[i] = [2]int{8, size - 15 + i}
+	}
+	return copy1, copy2
+}
+
 // writeFormatInfo places the 15-bit format information for level+mask in both
 // copies.
 func (g *grid) writeFormatInfo(level Level, mask int) {
 	f := formatInfo(level, mask)
 	bit := func(i int) bool { return (f>>uint(14-i))&1 != 0 } // i=0 is MSB
-
-	// Copy 1 around the top-left finder.
-	for i := 0; i <= 5; i++ {
-		g.modules[8][i] = bit(i)
-	}
-	g.modules[8][7] = bit(6)
-	g.modules[8][8] = bit(7)
-	g.modules[7][8] = bit(8)
-	for i := 9; i <= 14; i++ {
-		g.modules[14-i][8] = bit(i)
-	}
-	// Copy 2 split across the other two finders.
-	for i := 0; i <= 7; i++ {
-		g.modules[g.size-1-i][8] = bit(i)
-	}
-	for i := 8; i <= 14; i++ {
-		g.modules[8][g.size-15+i] = bit(i)
+	copy1, copy2 := formatBitCells(g.size)
+	for i := 0; i <= 14; i++ {
+		g.modules[copy1[i][0]][copy1[i][1]] = bit(i)
+		g.modules[copy2[i][0]][copy2[i][1]] = bit(i)
 	}
 }
 

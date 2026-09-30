@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"math"
+	stdbits "math/bits"
 
 	// Image format decoders registered for DecodePNG's image.Decode.
 	_ "image/gif"
@@ -23,6 +25,12 @@ type Decoded struct {
 	Errors  int // number of codeword errors corrected
 }
 
+// validModuleCount reports whether n is a valid QR symbol size on the
+// version 1..40 grid: 21, 25, ..., 177.
+func validModuleCount(n int) bool {
+	return n >= 21 && (n-17)%4 == 0
+}
+
 // DecodeMatrix decodes a module matrix (true = dark), performing format
 // recovery, unmasking, de-interleaving and Reed-Solomon error correction.
 //
@@ -30,7 +38,7 @@ type Decoded struct {
 // it also decodes matrices produced by other conforming encoders.
 func DecodeMatrix(modules [][]bool) (*Decoded, error) {
 	size := len(modules)
-	if size < 21 || (size-17)%4 != 0 {
+	if !validModuleCount(size) {
 		return nil, fmt.Errorf("qr: invalid matrix size %d", size)
 	}
 	for _, row := range modules {
@@ -109,24 +117,11 @@ func readFormat(modules [][]bool, size int) (Level, int, error) {
 		}
 		return 0
 	}
-	// Copy 1 (around the top-left finder), MSB first.
-	var c1 int
-	for i := 0; i <= 5; i++ {
-		c1 = c1<<1 | bit(8, i)
-	}
-	c1 = c1<<1 | bit(8, 7)
-	c1 = c1<<1 | bit(8, 8)
-	c1 = c1<<1 | bit(7, 8)
-	for i := 9; i <= 14; i++ {
-		c1 = c1<<1 | bit(14-i, 8)
-	}
-	// Copy 2.
-	var c2 int
-	for i := 0; i <= 7; i++ {
-		c2 = c2<<1 | bit(size-1-i, 8)
-	}
-	for i := 8; i <= 14; i++ {
-		c2 = c2<<1 | bit(8, size-15+i)
+	copy1, copy2 := formatBitCells(size)
+	var c1, c2 int
+	for i := 0; i <= 14; i++ {
+		c1 = c1<<1 | bit(copy1[i][0], copy1[i][1])
+		c2 = c2<<1 | bit(copy2[i][0], copy2[i][1])
 	}
 
 	bestLevel, bestMask, bestDist := Level(0), 0, 99
@@ -148,13 +143,7 @@ func readFormat(modules [][]bool, size int) (Level, int, error) {
 }
 
 func hamming15(a, b int) int {
-	x := (a ^ b) & 0x7fff
-	d := 0
-	for x != 0 {
-		d += x & 1
-		x >>= 1
-	}
-	return d
+	return stdbits.OnesCount(uint((a ^ b) & 0x7fff))
 }
 
 // deinterleaveAndCorrect reverses interleave, then Reed-Solomon corrects each
@@ -440,14 +429,14 @@ func sampleModules(img image.Image) ([][]bool, error) {
 	if pitch > 0 {
 		best = int(float64(symW)/pitch + 0.5)
 	}
-	if best < 21 || (best-17)%4 != 0 || best > 177 {
+	if !validModuleCount(best) || best > 177 {
 		best = 0
 		bestErr := 1e18
 		for n := 21; n <= 177; n += 4 {
 			p := float64(symW) / float64(n)
-			e := absf(p*float64(n) - float64(symW))
+			e := math.Abs(p*float64(n) - float64(symW))
 			// Prefer counts where both dimensions divide cleanly.
-			e += absf(float64(symH)/p - float64(n))
+			e += math.Abs(float64(symH)/p - float64(n))
 			if e < bestErr {
 				bestErr, best = e, n
 			}
@@ -467,11 +456,4 @@ func sampleModules(img image.Image) ([][]bool, error) {
 		}
 	}
 	return modules, nil
-}
-
-func absf(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-	return x
 }

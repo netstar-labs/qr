@@ -65,11 +65,18 @@ func (q *QRCode) Decode() (*Decoded, error) {
 	return DecodeMatrix(q.modules)
 }
 
+func validLevel(level Level) error {
+	if level < Low || level > High {
+		return errors.New("qr: invalid error-correction level")
+	}
+	return nil
+}
+
 // Encode builds the smallest symbol that holds content at the given level,
 // selecting mode, version and mask automatically.
 func Encode(content string, level Level) (*QRCode, error) {
-	if level < Low || level > High {
-		return nil, errors.New("qr: invalid error-correction level")
+	if err := validLevel(level); err != nil {
+		return nil, err
 	}
 	m := detectMode(content)
 	version, err := chooseVersion(content, m, level)
@@ -82,8 +89,8 @@ func Encode(content string, level Level) (*QRCode, error) {
 // EncodeVersion builds a symbol at a fixed version (1..40), returning an error
 // if content does not fit.
 func EncodeVersion(content string, level Level, version int) (*QRCode, error) {
-	if level < Low || level > High {
-		return nil, errors.New("qr: invalid error-correction level")
+	if err := validLevel(level); err != nil {
+		return nil, err
 	}
 	if version < 1 || version > 40 {
 		return nil, errors.New("qr: version out of range")
