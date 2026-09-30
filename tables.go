@@ -106,16 +106,6 @@ var totalCodewordsPerVersion = [41]int{
 	2323, 2465, 2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706,
 }
 
-// remainderBits is the number of 0 padding bits appended after the final
-// codeword when filling the symbol, per version (ISO/IEC 18004 Table 1).
-var remainderBits = [41]int{
-	0,
-	0, 7, 7, 7, 7, 7, 0, 0, 0, 0,
-	0, 0, 0, 3, 3, 3, 3, 3, 3, 3,
-	4, 4, 4, 4, 4, 4, 4, 3, 3, 3,
-	3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
-}
-
 // alignmentPositions lists the row/column center coordinates of alignment
 // patterns per version (ISO/IEC 18004 Annex E). Version 1 has none. Every
 // combination of coordinates is a pattern center except the three that would
